@@ -1,0 +1,53 @@
+/* src/components/SocialShare.css */
+.social-share {
+    text-align: center;
+    margin: 20px 0;
+  }
+  
+  .social-share h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .social-icons button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .social-icon {
+    font-size: 2rem;
+    color: #555;
+    transition: color 0.3s ease;
+  }
+  
+  .social-icon:hover {
+    color: #007bff; /* Change this color on hover */
+  }
+  
+  .social-icon.facebook:hover {
+    color: #3b5998; /* Facebook color */
+  }
+  
+  .social-icon.twitter:hover {
+    color: #181a1b; /* Twitter color */
+  }
+  
+  .social-icon.linkedin:hover {
+    color: #0077b5; /* LinkedIn color */
+  }
+  
+  .social-icon.whatsapp:hover {
+    color: #25d366; /* WhatsApp color */
+  }
+  
+  .social-icon.instagram:hover {
+    color: #e1306c; /* Instagram color */
+  }
+  
