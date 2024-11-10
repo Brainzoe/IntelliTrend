@@ -26,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categories, onCategorySelect 
   };
 
   return (
-    <header className="bg-gray-800 text-black p-4 flex flex-col md:flex-row md:justify-between md:items-center">
+    <header className="bg-gray-800 pt-16 text-black p-4 flex flex-col md:flex-row md:justify-between md:items-center sticky top-0 left-0 right-0 z-50 shadow-lg">
       {/* Logo and mobile menu toggle */}
       <div className="flex justify-between items-center w-full md:w-auto">
         <img src={logo} alt="IntelliTrend Logo" className="h-14 md:h-20 lg:h-24" /> {/* Adjusted sizes for different screens */}
@@ -76,7 +76,6 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categories, onCategorySelect 
 };
 
 export default Header;
-
 
 
 
