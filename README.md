@@ -6,7 +6,7 @@ Key Features:
 1. Trend Analysis: Provides daily and weekly updates on trending hashtags, viral content, and emerging platforms.
 2. Influencer Highlights: Showcases top influencers across major networks with detailed profiles and content samples.
 3. Social Media Insights: Offers data-driven insights on topics such as short-form video growth, social commerce, and AI-driven content.
-4. nteractive Dashboards: Visualizes data trends and user engagement metrics, enabling users to identify and analyze key social media shifts.
+4. Interactive Dashboards: Visualizes data trends and user engagement metrics, enabling users to identify and analyze key social media shifts.
 5. Customizable Watchlists: Allows users to create a personalized watchlist of trends and influencers they wish to monitor.
 
 With a sleek, responsive design, IntelliTrend empowers marketers, creators, and digital enthusiasts to stay ahead of the curve in the fast-evolving social media landscape, turning insights into actionable strategies.
