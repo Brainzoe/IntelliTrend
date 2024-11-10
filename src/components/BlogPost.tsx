@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Comments from './Comments';
 import SocialShare from './SocialShare';
+import Reactions from './Reactions';  // Import the new Reactions component
 
 interface BlogPostProps {
   title: string;
@@ -25,8 +26,15 @@ const BlogPost: React.FC<BlogPostProps> = ({ title, content, author, date, id, c
       <p>Category: {category}</p> {/* Display category */}
       <div className="prose mb-4" dangerouslySetInnerHTML={{ __html: content }} />
       
+      {/* Render Reactions */}
+      <Reactions postId={id} /> {/* Pass postId to the reactions component */}
+      
+      {/* Render Comments */}
       <Comments />
-      <SocialShare/>
+      
+      {/* Render Social Share */}
+      <SocialShare />
+      
       
     </article>
   );

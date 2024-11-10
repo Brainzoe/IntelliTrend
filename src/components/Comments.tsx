@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface Comment {
   name: string;
   message: string;
+  timestamp: number; // Add timestamp field to store the comment submission time
 }
 
 const Comments: React.FC = () => {
@@ -10,10 +11,44 @@ const Comments: React.FC = () => {
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
 
+  // Load comments from local storage only once when the component mounts
+  useEffect(() => {
+    const savedComments = localStorage.getItem('comments');
+    if (savedComments) {
+      console.log('Loading comments from local storage:', savedComments);
+      setComments(JSON.parse(savedComments));
+    } else {
+      console.log('No comments found in local storage.');
+    }
+  }, []); // Only runs once when the component mounts
+
+  // Update local storage only when comments change
+  useEffect(() => {
+    if (comments.length > 0) { // Only update local storage if there are comments
+      console.log('Updating local storage with comments:', comments);
+      localStorage.setItem('comments', JSON.stringify(comments));
+    }
+  }, [comments]); // Runs only when comments array changes
+
+  // Function to calculate how long ago the comment was made
+  const timeAgo = (timestamp: number) => {
+    const now = new Date().getTime();
+    const diffInSeconds = Math.floor((now - timestamp) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  };
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (name.trim() && message.trim()) {
-      setComments([...comments, { name, message }]);
+      const newComment = { name, message, timestamp: new Date().getTime() }; // Save the current timestamp
+      setComments((prevComments) => [...prevComments, newComment]);
       setName('');
       setMessage('');
     }
@@ -48,11 +83,11 @@ const Comments: React.FC = () => {
           <li key={index} className="bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm">
             <div className="flex items-center mb-2">
               <div className="w-10 h-10 rounded-full bg-blue-300 flex items-center justify-center text-white font-bold mr-3">
-                {comment.name.charAt(0).toUpperCase()} {/* Display first letter of the name */}
+                {comment.name.charAt(0).toUpperCase()}
               </div>
               <div>
                 <strong className="text-gray-700">{comment.name}</strong>
-                <span className="text-gray-500 text-sm ml-2">just now</span> {/* Placeholder for time */}
+                <span className="text-gray-500 text-sm ml-2">{timeAgo(comment.timestamp)}</span> {/* Display time ago */}
               </div>
             </div>
             <p className="text-gray-600">{comment.message}</p>
