@@ -3,34 +3,33 @@ import React, { useState, useEffect } from 'react';
 interface Comment {
   name: string;
   message: string;
-  timestamp: number; // Add timestamp field to store the comment submission time
+  timestamp: number;
 }
 
-const Comments: React.FC = () => {
+interface CommentsProps {
+  postId: string; // Unique identifier for each post
+}
+
+const Comments: React.FC<CommentsProps> = ({ postId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
 
-  // Load comments from local storage only once when the component mounts
+  // Load comments for the specific post from local storage
   useEffect(() => {
-    const savedComments = localStorage.getItem('comments');
+    const savedComments = localStorage.getItem(`comments_${postId}`);
     if (savedComments) {
-      console.log('Loading comments from local storage:', savedComments);
       setComments(JSON.parse(savedComments));
-    } else {
-      console.log('No comments found in local storage.');
     }
-  }, []); // Only runs once when the component mounts
+  }, [postId]); // Runs when the component mounts or postId changes
 
-  // Update local storage only when comments change
+  // Save comments for the specific post to local storage
   useEffect(() => {
-    if (comments.length > 0) { // Only update local storage if there are comments
-      console.log('Updating local storage with comments:', comments);
-      localStorage.setItem('comments', JSON.stringify(comments));
+    if (comments.length > 0) {
+      localStorage.setItem(`comments_${postId}`, JSON.stringify(comments));
     }
-  }, [comments]); // Runs only when comments array changes
+  }, [comments, postId]);
 
-  // Function to calculate how long ago the comment was made
   const timeAgo = (timestamp: number) => {
     const now = new Date().getTime();
     const diffInSeconds = Math.floor((now - timestamp) / 1000);
@@ -47,7 +46,7 @@ const Comments: React.FC = () => {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (name.trim() && message.trim()) {
-      const newComment = { name, message, timestamp: new Date().getTime() }; // Save the current timestamp
+      const newComment = { name, message, timestamp: new Date().getTime() };
       setComments((prevComments) => [...prevComments, newComment]);
       setName('');
       setMessage('');
@@ -87,7 +86,7 @@ const Comments: React.FC = () => {
               </div>
               <div>
                 <strong className="text-gray-700">{comment.name}</strong>
-                <span className="text-gray-500 text-sm ml-2">{timeAgo(comment.timestamp)}</span> {/* Display time ago */}
+                <span className="text-gray-500 text-sm ml-2">{timeAgo(comment.timestamp)}</span>
               </div>
             </div>
             <p className="text-gray-600">{comment.message}</p>

@@ -1,9 +1,8 @@
-// src/components/BlogPost.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Comments from './Comments';
 import SocialShare from './SocialShare';
-import Reactions from './Reactions';  // Import the new Reactions component
+import Reactions from './Reactions';
 
 interface BlogPostProps {
   title: string;
@@ -23,19 +22,17 @@ const BlogPost: React.FC<BlogPostProps> = ({ title, content, author, date, id, c
       <p className="text-gray-600 mb-2">
         By {author} on {new Date(date).toLocaleDateString()}
       </p>
-      <p>Category: {category}</p> {/* Display category */}
+      <p>Category: {category}</p>
       <div className="prose mb-4" dangerouslySetInnerHTML={{ __html: content }} />
-      
+
       {/* Render Reactions */}
-      <Reactions postId={id} /> {/* Pass postId to the reactions component */}
-      
+      <Reactions postId={id} />
+
       {/* Render Comments */}
-      <Comments />
-      
+      <Comments postId={id.toString()} /> {/* Ensure id is passed as a string */}
+
       {/* Render Social Share */}
       <SocialShare />
-      
-      
     </article>
   );
 };
