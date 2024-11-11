@@ -24,7 +24,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ title, content, author, date, id, c
       </p>
       <p>Category: {category}</p>
       <div className="prose mb-4" dangerouslySetInnerHTML={{ __html: content }} />
-
+      <a href={`/posts/${id}`} className="text-blue-600 mt-4 inline-block">Read More</a>
       {/* Render Reactions */}
       <Reactions postId={id} />
 
