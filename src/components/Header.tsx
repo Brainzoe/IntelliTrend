@@ -1,8 +1,11 @@
+//src/components/Header.tsx
+
 import React, { useState } from 'react';
 import SearchBar from './SearchBar';
 
 // Import your logo and icons
 import logo from '../assets/Heading.gif'; // Replace with your logo path
+import logo1 from '../assets/Heading.png';
 import homeIcon from '../assets/home-icon.svg';
 import aboutIcon from '../assets/about-icon.svg';
 import contactIcon from '../assets/contact-icon.svg';
@@ -29,9 +32,9 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categories, onCategorySelect 
     <header className="bg-gray-800 pt-16 text-black p-4 flex flex-col md:flex-row md:justify-between md:items-center sticky top-0 left-0 right-0 z-50 shadow-lg">
       {/* Logo and mobile menu toggle */}
       <div className="flex justify-between items-center w-full md:w-auto">
-        <img src={logo} alt="IntelliTrend Logo" className="h-14 md:h-20 lg:h-24" /> {/* Adjusted sizes for different screens */}
-        <button 
-          className="md:hidden text-white focus:outline-none" 
+        <img src={logo1} alt="IntelliTrend Logo" className="h-14 md:h-20 lg:h-24" /> {/* Adjusted sizes for different screens */}
+        <button
+          className="md:hidden text-white focus:outline-none"
           onClick={toggleMobileMenu}
         >
           {isMobileMenuOpen ? '✖' : '☰'}
@@ -44,6 +47,21 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categories, onCategorySelect 
           <img src={homeIcon} alt="Home" className="h-5 mr-2" />
           Home
         </a>
+
+        {/* Render categories with icons first */}
+        {categories.map((category) => (
+          <a
+            key={category.label}
+            href={`/${category.label.toLowerCase()}`}
+            onClick={() => onCategorySelect(category.label)}
+            className="hover:text-gray-300 flex items-center py-2 md:py-0"
+          >
+            <img src={category.icon} alt={category.label} className="h-5 mr-2" />
+            {category.label}
+          </a>
+        ))}
+
+        {/* About and Contact come after categories */}
         <a href="/about" className="hover:text-gray-300 flex items-center py-2 md:py-0">
           <img src={aboutIcon} alt="About" className="h-5 mr-2" />
           About
@@ -52,20 +70,8 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categories, onCategorySelect 
           <img src={contactIcon} alt="Contact" className="h-5 mr-2" />
           Contact
         </a>
-
-        {/* Render categories with icons */}
-        {categories.map((category) => (
-          <a 
-            key={category.label} 
-            href={`/${category.label.toLowerCase()}`} // Adjusted route to match path (e.g., /technology, /adventure)
-            onClick={() => onCategorySelect(category.label)} 
-            className="hover:text-gray-300 flex items-center py-2 md:py-0"
-          >
-            <img src={category.icon} alt={category.label} className="h-5 mr-2" />
-            {category.label}
-          </a>
-        ))}
       </nav>
+
 
       {/* Search bar */}
       <div className="mt-4 md:mt-0">

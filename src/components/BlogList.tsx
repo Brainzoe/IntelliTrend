@@ -1,31 +1,19 @@
 // src/components/BlogList.tsx
-import React from 'react';
-import BlogPost from './BlogPost';
+import React from "react";
+import { Post } from "../context/BlogContext";
+import BlogPost from "./BlogPost";
 
-interface BlogListProps {
-  posts: {
-    id: number;
-    title: string;
-    content: string;
-    author: string;
-    date: string;
-    category: string;
-  }[];
+export interface BlogListProps {
+  posts: Post[];
+  userId: string;
+  preview?: boolean; // Add this line
 }
 
-const BlogList: React.FC<BlogListProps> = ({ posts }) => {
+const BlogList: React.FC<BlogListProps> = ({ posts, userId, preview = false }) => {
   return (
-    <div>
+    <div className="space-y-6">
       {posts.map((post) => (
-        <BlogPost
-          key={post.id}
-          id={post.id}
-          title={post.title}
-          content={post.content}
-          author={post.author}
-          date={post.date}
-          category={post.category}  // Add category to props if needed
-        />
+        <BlogPost key={post._id} post={post} userId={userId} preview={preview} />
       ))}
     </div>
   );
