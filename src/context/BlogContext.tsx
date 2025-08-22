@@ -1,6 +1,7 @@
 // src/context/BlogContext.tsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import API_BASE from "../config";
 
 export interface Post {
   _id: string;
@@ -58,24 +59,6 @@ interface BlogContextType {
 
 const BlogContext = createContext<BlogContextType | undefined>(undefined);
 
-// Recursive helper for inserting replies
-// const insertReplyRecursive = (
-//   items: CommentType[] | ReplyType[],
-//   parentId: string,
-//   newReply: ReplyType
-// ): CommentType[] | ReplyType[] => {
-//   return items.map((item) => {
-//     if (item._id === parentId) {
-//       return { ...item, replies: [...(item.replies || []), newReply] };
-//     } else if (item.replies && item.replies.length > 0) {
-//       return { ...item, replies: insertReplyRecursive(item.replies, parentId, newReply) };
-//     } else {
-//       return item;
-//     }
-//   });
-// };
-// BlogContext.tsx
-
 // helper to insert reply at correct depth
 const insertReplyRecursive = (
   comments: CommentType[],
@@ -132,7 +115,7 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchPosts = async () => {
     try {
-      const { data } = await axios.get("/api/posts");
+      const { data } = await axios.get(`${API_BASE}/posts`);
       setPosts(data);
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -141,7 +124,7 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addPost = async (post: { title: string; author: string; category: string; content: string }) => {
     try {
-      const { data } = await axios.post("/api/posts", post);
+      const { data } = await axios.post(`${API_BASE}/posts`, post);
       setPosts((prev) => [data, ...prev]);
     } catch (error) {
       console.error("Error adding post:", error);
@@ -150,7 +133,7 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updatePost = async (id: string, post: Partial<Post>) => {
     try {
-      const { data } = await axios.put(`/api/posts/${id}`, post);
+      const { data } = await axios.put(`${API_BASE}/posts/${id}`, post);
       setPosts((prev) => prev.map((p) => (p._id === id ? data : p)));
     } catch (error) {
       console.error("Error updating post:", error);
@@ -159,7 +142,7 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const deletePost = async (id: string) => {
     try {
-      await axios.delete(`/api/posts/${id}`);
+      await axios.delete(`${API_BASE}/posts/${id}`);
       setPosts((prev) => prev.filter((p) => p._id !== id));
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -168,7 +151,7 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addComment = async (postId: string, author: string, text: string): Promise<Post | undefined> => {
     try {
-      const { data } = await axios.post(`/api/posts/${postId}/comment`, { author, text });
+      const { data } = await axios.post(`${API_BASE}/posts/${postId}/comment`, { author, text });
       let updatedPost: Post | undefined;
       setPosts((prev) => {
         updatedPost = prev.map((p) => (p._id === postId ? { ...p, comments: data.comments } : p))
@@ -189,7 +172,7 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<Post | undefined> => {
     try {
       const { data } = await axios.post(
-        `/api/posts/${postId}/comment/${parentId}/reply`,
+        `${API_BASE}/posts/${postId}/comment/${parentId}/reply`,
         { author, text }
       );
   
@@ -217,7 +200,7 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
     parentCommentId?: string
   ): Promise<Post | undefined> => {
     try {
-      let url = `/api/posts/${postId}`;
+      let url = `${API_BASE}/posts/${postId}`;
   
       if (!targetId) {
         // post-level reaction
@@ -252,7 +235,7 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const toggleSavePost = async (postId: string, userId: string) => {
     try {
-      const { data } = await axios.post(`/api/posts/${postId}/save`, { userId });
+      const { data } = await axios.post(`${API_BASE}/posts/${postId}/save`, { userId });
       setPosts((prev) => prev.map((p) => (p._id === postId ? { ...p, savedBy: data.savedBy } : p)));
     } catch (error) {
       console.error("Error toggling save post:", error);
@@ -261,7 +244,7 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const sharePost = async (postId: string) => {
     try {
-      await axios.post(`/api/posts/${postId}/share`);
+      await axios.post(`${API_BASE}/posts/${postId}/share`);
       setPosts((prev) => prev.map((p) => (p._id === postId ? { ...p, shares: (p.shares || 0) + 1 } : p)));
     } catch (error) {
       console.error("Error sharing post:", error);
