@@ -9,6 +9,7 @@ import Color from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
 import TextAlign from "@tiptap/extension-text-align";
 import Link from "@tiptap/extension-link";
+import DOMPurify from "dompurify";
 
 const Admin: React.FC = () => {
   const { posts, addPost, updatePost, deletePost } = useBlog();
@@ -138,6 +139,7 @@ const Admin: React.FC = () => {
                     <h4 className="text-lg font-semibold">{p.title}</h4>
                     <p className="text-gray-500 text-sm">By {p.author}</p>
                     <p className="text-gray-600 mt-2">{p.category}</p>
+                    <div className="mt-2 prose max-w-full" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(p.content) }} />
                   </div>
                   <div className="mt-4 flex gap-2">
                     <button onClick={() => handleEdit(p)} className="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500">Edit</button>
@@ -154,6 +156,7 @@ const Admin: React.FC = () => {
 };
 
 export default Admin;
+
 
 
 
