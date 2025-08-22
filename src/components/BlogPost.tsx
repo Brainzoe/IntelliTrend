@@ -5,6 +5,8 @@ import ReactionButtons from "./ReactionButtons";
 import CommentSection from "./CommentSection";
 import { Link } from "react-router-dom";
 
+import DOMPurify from "dompurify";
+
 interface BlogPostProps {
   post: Post;
   userId: string;
@@ -34,17 +36,24 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
       </p>
 
       {/* Content with "Read More" */}
-      <p className="mb-2">
-        {displayContent}
-        {isLong && !expanded && (
-          <button
-            onClick={() => setExpanded(true)}
-            className="text-blue-500 ml-2"
-          >
-            Read More
-          </button>
-        )}
-      </p>
+      import DOMPurify from "dompurify"; // install via npm i dompurify
+
+<p className="mb-2">
+  <span
+    dangerouslySetInnerHTML={{
+      __html: DOMPurify.sanitize(displayContent),
+    }}
+  />
+  {isLong && !expanded && (
+    <button
+      onClick={() => setExpanded(true)}
+      className="text-blue-500 ml-2"
+    >
+      Read More
+    </button>
+  )}
+</p>
+
 
       {/* Reaction Buttons (clickable) */}
       <ReactionButtons
