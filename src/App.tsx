@@ -11,7 +11,6 @@ import Post from "./components/Post";
 import RecentUpdates from "./components/RecentUpdates";
 import { BlogProvider, useBlog } from "./context/BlogContext";
 import { Toaster } from "react-hot-toast";
-// import AdminRegisterForm from "./components/AdminRegisterForm";
 
 // Auth
 import { AuthProvider } from "./context/AuthContext";
@@ -32,7 +31,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Dashboard from "./pages/Dashboard";
 
-// ✅ New Admin Auth Pages
+// Admin Auth Pages
 import AdminLogin from "./pages/AdminLogin";
 import AdminRegisterPage from "./pages/AdminRegisterPage";
 
@@ -57,8 +56,7 @@ const App: React.FC = () => {
   ];
 
   const handleSearch = (query: string) => setSearchQuery(query.toLowerCase());
-  const handleCategorySelect = (category: string) =>
-    setSelectedCategory(category);
+  const handleCategorySelect = (category: string) => setSelectedCategory(category);
 
   return (
     <AuthProvider>

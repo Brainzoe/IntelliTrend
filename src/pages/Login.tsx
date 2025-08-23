@@ -90,6 +90,7 @@ const Login: React.FC = () => {
             </Transition>
           </form>
 
+          {/* Links for Forgot Password and Register */}
           <div className="mt-4 flex justify-between text-sm text-gray-600 dark:text-gray-300">
             <Link to="/forgot-password" className="text-blue-600 hover:underline">
               Forgot Password?
