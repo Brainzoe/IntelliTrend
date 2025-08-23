@@ -3,6 +3,11 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import API_BASE from "../config";
 import { useAuth } from "./AuthContext";
+import toast from 'react-hot-toast';
+
+import LoginModal from "../components/LoginModal";
+
+
 
 
 interface User {
@@ -68,7 +73,6 @@ interface BlogContextType {
 
 const BlogContext = createContext<BlogContextType | undefined>(undefined);
 
-
 // helper to insert reply at correct depth
 const insertReplyRecursive = (
   comments: CommentType[],
@@ -125,7 +129,7 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { user } = useAuth();
 
   const [posts, setPosts] = useState<Post[]>([]);
-  
+  const [showLoginModal, setShowLoginModal] = useState(false); // ← move here
 
   const fetchPosts = async () => {
     try {
@@ -138,7 +142,7 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addPost = async (post: { title: string; category: string; content: string }) => {
     if (!user) {
-      console.error("You must be logged in to add a post");
+      toast.error("You must be logged in to add a post");
       return undefined;
 
 
@@ -176,7 +180,8 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addComment = async (postId: string, text: string): Promise<Post | undefined> => {
     if (!user) {
-      console.error("Login required to comment");
+      // toast.error("Login required to comment");
+      setShowLoginModal(true);
 
       return undefined;
     }
@@ -203,7 +208,8 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addReply = async (postId: string, parentId: string, text: string): Promise<Post | undefined> => {
     if (!user) {
-      console.error("Login required to reply");
+      // toast.error("Login required to reply");
+      setShowLoginModal(true);
       return undefined;
     }
 
@@ -238,7 +244,8 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
     parentCommentId?: string
   ): Promise<Post | undefined> => {
     if (!user) {
-      console.error("Login required to react");
+      // toast.error("Login required to react");
+      setShowLoginModal(true);
       return undefined; // ✅ Return undefined
     }
   
@@ -306,6 +313,11 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }}
     >
       {children}
+
+      <LoginModal
+      isOpen={showLoginModal}
+      onClose={() => setShowLoginModal(false)}
+    />
     </BlogContext.Provider>
   );
 };
