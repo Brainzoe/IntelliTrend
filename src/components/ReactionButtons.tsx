@@ -8,7 +8,6 @@ interface ReactionButtonsProps {
   parentCommentId?: string; // for nested replies
   initialReactions?: { [key: string]: number };
   initialReactedBy?: { [userId: string]: string };
-  userId: string;
 }
 
 const reactionEmojis = ["👍", "❤️", "😂", "😮", "😢", "😡"];
@@ -19,7 +18,6 @@ const ReactionButtons: React.FC<ReactionButtonsProps> = ({
   parentCommentId,
   initialReactions = {},
   initialReactedBy = {},
-  userId,
 }) => {
   const { addReaction } = useBlog();
 
@@ -36,21 +34,11 @@ const ReactionButtons: React.FC<ReactionButtonsProps> = ({
 
   const handleReact = async (emoji: string) => {
     try {
-      await addReaction(postId, emoji, userId, targetId, parentCommentId);
+      const data = await addReaction(postId, emoji, targetId, parentCommentId);
 
-      // optimistic update
-      setReactions((prev) => ({
-        ...prev,
-        [emoji]:
-          reactedBy[userId] === emoji
-            ? (prev[emoji] || 1) - 1
-            : (prev[emoji] || 0) + 1,
-      }));
-
-      setReactedBy((prev) => ({
-        ...prev,
-        [userId]: prev[userId] === emoji ? "" : emoji,
-      }));
+      // update local state optimistically
+      setReactions(data?.reactions || {});
+      setReactedBy(data?.reactedBy || {});
     } catch (e) {
       console.error("Failed to react:", e);
     }
@@ -63,13 +51,11 @@ const ReactionButtons: React.FC<ReactionButtonsProps> = ({
           key={emoji}
           onClick={() => handleReact(emoji)}
           className={`px-2 py-1 rounded text-sm transition ${
-            reactedBy[userId] === emoji
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 hover:bg-gray-300"
+            reactedBy?.[emoji] ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"
           }`}
           title={emoji}
         >
-          {emoji}
+          {emoji} {reactions[emoji] || ""}
         </button>
       ))}
     </div>

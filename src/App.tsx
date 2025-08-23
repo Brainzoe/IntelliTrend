@@ -12,7 +12,7 @@ import RecentUpdates from "./components/RecentUpdates";
 import { BlogProvider, useBlog } from "./context/BlogContext";
 import { Toaster } from "react-hot-toast";
 
-// Authentications
+// Auth
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -34,6 +34,7 @@ import Trends from "./pages/Trends";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Admin from "./pages/Admin";
+import Dashboard from "./pages/Dashboard";
 
 const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,7 +72,21 @@ const App: React.FC = () => {
         <div className="flex flex-col md:flex-row p-4">
           <main className="flex-grow md:w-3/4">
             <Routes>
+              {/* Public routes */}
               <Route path="/" element={<HomeWrapper userId={userId} />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/blog" element={<BlogListWrapper userId={userId} />} />
+              <Route path="/blog/:postId" element={<PostWrapper userId={userId} />} />
+              <Route path="/technology" element={<Technology />} />
+              <Route path="/adventure" element={<Adventure />} />
+              <Route path="/social" element={<Social />} />
+              <Route path="/celebrity" element={<Celebrity />} />
+              <Route path="/trends" element={<Trends />} />
+
+              {/* Protected routes */}
               <Route
                 path="/admin"
                 element={
@@ -80,23 +95,14 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
               <Route
-                path="/blog"
-                element={<BlogListWrapper userId={userId} />}
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
               />
-              <Route
-                path="/blog/:postId"
-                element={<PostWrapper userId={userId} />}
-              />
-              <Route path="/technology" element={<Technology />} />
-              <Route path="/adventure" element={<Adventure />} />
-              <Route path="/social" element={<Social />} />
-              <Route path="/celebrity" element={<Celebrity />} />
-              <Route path="/trends" element={<Trends />} />
             </Routes>
           </main>
 
@@ -122,13 +128,13 @@ const HomeWrapper: React.FC<{ userId: string }> = ({ userId }) => {
 
 const BlogListWrapper: React.FC<{ userId: string }> = ({ userId }) => {
   const { posts } = useBlog();
-  return <BlogList posts={posts} userId={userId} />;
+  return <BlogList posts={posts} preview={true} />
 };
 
 // Post wrapper
 const PostWrapper: React.FC<{ userId: string }> = ({ userId }) => {
   const { posts } = useBlog();
-  return <Post posts={posts} userId={userId} />;
+  return <Post posts={posts} />
 };
 
 export default App;

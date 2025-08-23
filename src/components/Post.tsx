@@ -6,16 +6,15 @@ import BlogPost from "./BlogPost";
 
 interface PostProps {
   posts: PostType[];
-  userId: string;
 }
 
-const Post: React.FC<PostProps> = ({ posts, userId }) => {
+const Post: React.FC<PostProps> = ({ posts }) => {
   const { postId } = useParams<{ postId: string }>();
   const post = posts.find((p) => p._id === postId);
 
   if (!post) return <p>Post not found.</p>;
 
-  return <BlogPost post={post} userId={userId} />;
+  return <BlogPost post={post} />;
 };
 
 export default Post;

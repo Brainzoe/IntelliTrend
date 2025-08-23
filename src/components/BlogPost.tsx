@@ -3,16 +3,15 @@ import React, { useState } from "react";
 import { Post } from "../context/BlogContext";
 import ReactionButtons from "./ReactionButtons";
 import CommentSection from "./CommentSection";
-import ShareButtons from "./ShareButtons"; // ✅ Import
+import ShareButtons from "./ShareButtons"; 
 import { Link } from "react-router-dom";
 
 interface BlogPostProps {
   post: Post;
-  userId: string;
   preview?: boolean;
 }
 
-const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) => {
+const BlogPost: React.FC<BlogPostProps> = ({ post, preview = false }) => {
   const [showComments, setShowComments] = useState(!preview);
   const [showReactions, setShowReactions] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -34,13 +33,11 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
         By {post.author} | {new Date(post.date).toLocaleDateString()}
       </p>
 
-      {/* ✅ Render formatted HTML */}
       <div
         className="prose dark:prose-invert max-w-none mb-2"
         dangerouslySetInnerHTML={{ __html: displayContent }}
       />
 
-      {/* Read More button */}
       {preview && isLong && !expanded && (
         <button
           onClick={() => setExpanded(true)}
@@ -53,9 +50,9 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
       {/* Reactions */}
       <ReactionButtons
         postId={post._id}
-        userId={userId}
+        targetId={undefined} 
+        parentCommentId={undefined} 
         initialReactions={post.reactions}
-        initialReactedBy={post.reactedBy}
       />
 
       {/* Toggle reactions */}
@@ -90,12 +87,9 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
         >
           🔗 Copy Link
         </button>
-
-        {/* ✅ Share buttons go here */}
         <ShareButtons postId={post._id} title={post.title} />
       </div>
 
-      {/* Shares count */}
       {post.shares !== undefined && (
         <p className="mt-2 text-sm text-gray-500">Shares: {post.shares}</p>
       )}
@@ -114,7 +108,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
 
           {showComments && (
             <div className="mt-4">
-              <CommentSection postId={post._id} userId={userId} />
+              <CommentSection postId={post._id} />
             </div>
           )}
         </>
@@ -136,4 +130,3 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
 };
 
 export default BlogPost;
-

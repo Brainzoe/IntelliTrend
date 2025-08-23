@@ -5,32 +5,40 @@ import ReactionButtons from "./ReactionButtons";
 
 interface Props {
   postId: string;
-  userId: string;
 }
 
 /** Simple "time ago" formatter */
-const timeAgo = (iso: string) => {
+export const timeAgo = (iso: string) => {
   const date = new Date(iso);
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  const units: [label: Intl.RelativeTimeFormatUnit, secs: number][] = [
-    ["year", 31536000],
-    ["month", 2592000],
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000); // in seconds
+
+  if (diff < 0) return "just now"; // future dates
+
+  const units: [label: string, secs: number][] = [
+    ["year", 31536000],   // 365 days
+    ["month", 2592000],   // 30 days
     ["week", 604800],
     ["day", 86400],
     ["hour", 3600],
     ["minute", 60],
     ["second", 1],
   ];
+
   for (const [label, secs] of units) {
-    const v = Math.floor(seconds / secs);
-    if (v >= 1) return `${v} ${label}${v > 1 ? "s" : ""} ago`;
+    const value = Math.floor(diff / secs);
+    if (value >= 1) {
+      return `${value} ${label}${value > 1 ? "s" : ""} ago`;
+    }
   }
+
   return "just now";
 };
 
+
 type NodeType = CommentType | ReplyType;
 
-const CommentSection: React.FC<Props> = ({ postId, userId }) => {
+const CommentSection: React.FC<Props> = ({ postId }) => {
   const { posts, addComment, addReply } = useBlog();
   const post = useMemo(() => posts.find((p) => p._id === postId), [posts, postId]);
 
@@ -42,19 +50,21 @@ const CommentSection: React.FC<Props> = ({ postId, userId }) => {
 
   if (!post) return <p>Loading comments...</p>;
 
+  // ----------------- Fixed functions -----------------
   const onAddComment = async () => {
     if (!newCommentText.trim()) return;
-    await addComment(postId, userId || "Anonymous", newCommentText.trim());
+    await addComment(postId, newCommentText.trim()); // author removed
     setNewCommentText("");
   };
 
   const onReply = async (parentId: string) => {
     const text = (replyDrafts[parentId] || "").trim();
     if (!text) return;
-    await addReply(postId, parentId, userId || "Anonymous", text);
+    await addReply(postId, parentId, text); // author removed
     setReplyDrafts((prev) => ({ ...prev, [parentId]: "" }));
     setOpenReplyFor(null);
   };
+  // ----------------------------------------------------
 
   const renderList = (list: NodeType[] | undefined, depth = 0) => {
     if (!list || list.length === 0) return null;
@@ -88,7 +98,6 @@ const CommentSection: React.FC<Props> = ({ postId, userId }) => {
                 <ReactionButtons
                   postId={postId}
                   targetId={item._id}
-                  userId={userId}
                   initialReactions={item.reactions || {}}
                   initialReactedBy={item.reactedBy || {}}
                 />
@@ -131,10 +140,7 @@ const CommentSection: React.FC<Props> = ({ postId, userId }) => {
                       setReplyDrafts((prev) => ({ ...prev, [item._id]: e.target.value }))
                     }
                   />
-                  <button
-                    className="bg-blue-600 text-white px-3 rounded"
-                    onClick={() => onReply(item._id)}
-                  >
+                  <button className="bg-blue-600 text-white px-3 rounded" onClick={() => onReply(item._id)}>
                     Reply
                   </button>
                 </div>
@@ -152,18 +158,13 @@ const CommentSection: React.FC<Props> = ({ postId, userId }) => {
                       }))
                     }
                   >
-                    {isCollapsed
-                      ? `Show Replies (${item.replies.length})`
-                      : "Hide Replies"}
+                    {isCollapsed ? `Show Replies (${item.replies.length})` : "Hide Replies"}
                   </button>
                 </div>
               )}
 
               {/* Children */}
-              {!isCollapsed &&
-                item.replies &&
-                item.replies.length > 0 &&
-                renderList(item.replies, depth + 1)}
+              {!isCollapsed && item.replies && item.replies.length > 0 && renderList(item.replies, depth + 1)}
             </div>
           </div>
         </div>

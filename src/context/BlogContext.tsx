@@ -2,6 +2,15 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import API_BASE from "../config";
+import { useAuth } from "./AuthContext";
+
+
+interface User {
+  _id: string;
+  username: string;
+  email: string;
+  // ...other fields
+}
 
 export interface Post {
   _id: string;
@@ -40,24 +49,25 @@ export interface ReplyType {
 interface BlogContextType {
   posts: Post[];
   fetchPosts: () => Promise<void>;
-  addPost: (post: { title: string; author: string; category: string; content: string }) => Promise<void>;
+  addPost: (post: { title: string; category: string; content: string }) => Promise<void>;
   updatePost: (id: string, post: Partial<Post>) => Promise<void>;
   deletePost: (id: string) => Promise<void>;
-  addComment: (postId: string, author: string, text: string) => Promise<Post | undefined>;
-  addReply: (postId: string, parentId: string, author: string, text: string) => Promise<Post | undefined>;
+  addComment: (postId: string, text: string) => Promise<Post | undefined>;
+  addReply: (postId: string, parentId: string, text: string) => Promise<Post | undefined>;
   addReaction: (
     postId: string,
     emoji: string,
-    userId: string,
     targetId?: string,
     parentCommentId?: string
   ) => Promise<Post | undefined>;
-  
   sharePost: (postId: string) => Promise<void>;
-  toggleSavePost: (postId: string, userId: string) => Promise<void>;
+  toggleSavePost: (postId: string, userId: string) => Promise<void>; // can leave userId here
 }
 
+
+
 const BlogContext = createContext<BlogContextType | undefined>(undefined);
+
 
 // helper to insert reply at correct depth
 const insertReplyRecursive = (
@@ -111,7 +121,11 @@ const insertReactionRecursive = (
 };
 
 export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  
+  const { user } = useAuth();
+
   const [posts, setPosts] = useState<Post[]>([]);
+  
 
   const fetchPosts = async () => {
     try {
@@ -122,14 +136,25 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addPost = async (post: { title: string; author: string; category: string; content: string }) => {
+  const addPost = async (post: { title: string; category: string; content: string }) => {
+    if (!user) {
+      console.error("You must be logged in to add a post");
+      return undefined;
+
+
+    }
+
     try {
-      const { data } = await axios.post(`${API_BASE}/posts`, post);
+      const { data } = await axios.post(`${API_BASE}/posts`, {
+        ...post,
+        author: user.username // ✅ set author automatically
+      });
       setPosts((prev) => [data, ...prev]);
     } catch (error) {
       console.error("Error adding post:", error);
     }
   };
+
 
   const updatePost = async (id: string, post: Partial<Post>) => {
     try {
@@ -149,90 +174,100 @@ export const BlogProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addComment = async (postId: string, author: string, text: string): Promise<Post | undefined> => {
+  const addComment = async (postId: string, text: string): Promise<Post | undefined> => {
+    if (!user) {
+      console.error("Login required to comment");
+
+      return undefined;
+    }
+
     try {
-      const { data } = await axios.post(`${API_BASE}/posts/${postId}/comment`, { author, text });
+      const { data } = await axios.post(`${API_BASE}/posts/${postId}/comment`, {
+        author: user.username, // ✅ automatically set author
+        text
+      });
+
       let updatedPost: Post | undefined;
       setPosts((prev) => {
         updatedPost = prev.map((p) => (p._id === postId ? { ...p, comments: data.comments } : p))
-                          .find((p) => p._id === postId);
+          .find((p) => p._id === postId);
         return prev.map((p) => (p._id === postId ? { ...p, comments: data.comments } : p));
       });
+
       return updatedPost;
     } catch (error) {
       console.error("Error adding comment:", error);
     }
   };
 
-  const addReply = async (
-    postId: string,
-    parentId: string,
-    author: string,
-    text: string
-  ): Promise<Post | undefined> => {
+
+  const addReply = async (postId: string, parentId: string, text: string): Promise<Post | undefined> => {
+    if (!user) {
+      console.error("Login required to reply");
+      return undefined;
+    }
+
     try {
       const { data } = await axios.post(
         `${API_BASE}/posts/${postId}/comment/${parentId}/reply`,
-        { author, text }
+        {
+          author: user.username, // ✅ automatically set author
+          text
+        }
       );
-  
+
       let updatedPost: Post | undefined;
       setPosts((prev) => {
-        updatedPost = prev.map((p) =>
-          p._id === postId ? { ...p, comments: data.comments } : p
-        ).find((p) => p._id === postId);
-  
-        return prev.map((p) =>
-          p._id === postId ? { ...p, comments: data.comments } : p
-        );
+        updatedPost = prev.map((p) => (p._id === postId ? { ...p, comments: data.comments } : p))
+          .find((p) => p._id === postId);
+
+        return prev.map((p) => (p._id === postId ? { ...p, comments: data.comments } : p));
       });
+
       return updatedPost;
     } catch (error) {
       console.error("Error adding reply:", error);
     }
   };
-  
+
+
   const addReaction = async (
     postId: string,
     emoji: string,
-    userId: string,
     targetId?: string,
     parentCommentId?: string
   ): Promise<Post | undefined> => {
+    if (!user) {
+      console.error("Login required to react");
+      return undefined; // ✅ Return undefined
+    }
+  
     try {
       let url = `${API_BASE}/posts/${postId}`;
-  
-      if (!targetId) {
-        // post-level reaction
-        url += `/reaction`;
-      } else if (parentCommentId) {
-        // reply reaction
-        url += `/comment/${parentCommentId}/reply/${targetId}/reaction`;
-      } else {
-        // comment reaction
-        url += `/comment/${targetId}/reaction`;
-      }
+      if (!targetId) url += `/reaction`;
+      else if (parentCommentId) url += `/comment/${parentCommentId}/reply/${targetId}/reaction`;
+      else url += `/comment/${targetId}/reaction`;
   
       const { data } = await axios.post(url, {
-        type: emoji, // e.g. "like", "love"
-        userId,
+        type: emoji,
+        userId: user.username, // ✅ use _id from auth context // ✅ use the correct property from your auth user
       });
   
       setPosts((prev) =>
         prev.map((p) =>
-          p._id === postId
-            ? { ...p, comments: data.comments, reactions: data.reactions }
-            : p
+          p._id === postId ? { ...p, comments: data.comments, reactions: data.reactions } : p
         )
       );
   
       return data;
     } catch (err) {
       console.error("Error adding reaction:", err);
+      return undefined;
     }
   };
   
   
+
   const toggleSavePost = async (postId: string, userId: string) => {
     try {
       const { data } = await axios.post(`${API_BASE}/posts/${postId}/save`, { userId });

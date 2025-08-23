@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 interface SearchBarProps {
-  onSearch: (query: string) => void; // Props definition
+  onSearch: (query: string) => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
@@ -10,20 +10,30 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
-    onSearch(query); // Call the onSearch prop with the current query
+    onSearch(query);
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex items-center">
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search blog posts..."
-        className="px-3 py-2 rounded-l-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700">Search</button>
-    </form>
+<form
+  onSubmit={handleSearch}
+  className="flex w-auto" // container adapts to content
+>
+  <input
+    type="text"
+    value={query}
+    onChange={(e) => setQuery(e.target.value)}
+    placeholder="Search..."
+    className="w-32 px-2 py-1 text-sm rounded-l-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+  <button
+    type="submit"
+    className="w-16 px-2 py-1 text-sm bg-blue-600 text-white rounded-r-md hover:bg-blue-700"
+  >
+    Go
+  </button>
+</form>
+
+
   );
 };
 
