@@ -11,17 +11,11 @@ import Post from "./components/Post";
 import RecentUpdates from "./components/RecentUpdates";
 import { BlogProvider, useBlog } from "./context/BlogContext";
 import { Toaster } from "react-hot-toast";
+// import AdminRegisterForm from "./components/AdminRegisterForm";
 
 // Auth
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-
-// Icons
-import techIcon from "./assets/tech.svg";
-import adventureIcon from "./assets/adventure.svg";
-import socialIcon from "./assets/social.svg";
-import celebrityIcon from "./assets/celebrity.svg";
-import trendsIcon from "./assets/trends.svg";
 
 // Pages
 import Technology from "./pages/Technology";
@@ -33,8 +27,14 @@ import Trends from "./pages/Trends";
 // Users
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Dashboard from "./pages/Dashboard";
+
+// ✅ New Admin Auth Pages
+import AdminLogin from "./pages/AdminLogin";
+import AdminRegisterPage from "./pages/AdminRegisterPage";
 
 const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,11 +42,11 @@ const App: React.FC = () => {
   const userId = "guest-user";
 
   const categories = [
-    { label: "Technology", icon: techIcon },
-    { label: "Adventure", icon: adventureIcon },
-    { label: "Social", icon: socialIcon },
-    { label: "Celebrity", icon: celebrityIcon },
-    { label: "Trends", icon: trendsIcon },
+    { label: "Technology", icon: "/assets/tech.svg" },
+    { label: "Adventure", icon: "/assets/adventure.svg" },
+    { label: "Social", icon: "/assets/social.svg" },
+    { label: "Celebrity", icon: "/assets/celebrity.svg" },
+    { label: "Trends", icon: "/assets/trends.svg" },
   ];
 
   const recentUpdates = [
@@ -76,6 +76,8 @@ const App: React.FC = () => {
               <Route path="/" element={<HomeWrapper userId={userId} />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/blog" element={<BlogListWrapper userId={userId} />} />
@@ -85,6 +87,10 @@ const App: React.FC = () => {
               <Route path="/social" element={<Social />} />
               <Route path="/celebrity" element={<Celebrity />} />
               <Route path="/trends" element={<Trends />} />
+
+              {/* Admin-specific auth routes */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/register" element={<AdminRegisterPage />} />
 
               {/* Protected routes */}
               <Route
@@ -119,8 +125,6 @@ const App: React.FC = () => {
 };
 
 // ---------------- Wrappers using useBlog ----------------
-
-// Home wrapper
 const HomeWrapper: React.FC<{ userId: string }> = ({ userId }) => {
   const { posts } = useBlog();
   return <Home posts={posts} userId={userId} />;
@@ -128,13 +132,12 @@ const HomeWrapper: React.FC<{ userId: string }> = ({ userId }) => {
 
 const BlogListWrapper: React.FC<{ userId: string }> = ({ userId }) => {
   const { posts } = useBlog();
-  return <BlogList posts={posts} preview={true} />
+  return <BlogList posts={posts} preview={true} />;
 };
 
-// Post wrapper
 const PostWrapper: React.FC<{ userId: string }> = ({ userId }) => {
   const { posts } = useBlog();
-  return <Post posts={posts} />
+  return <Post posts={posts} />;
 };
 
 export default App;
