@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Post } from "../context/BlogContext";
 import ReactionButtons from "./ReactionButtons";
 import CommentSection from "./CommentSection";
+import ShareButtons from "./ShareButtons"; // ✅ Import
 import { Link } from "react-router-dom";
 
 interface BlogPostProps {
@@ -19,7 +20,6 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
   const MAX_PREVIEW_LENGTH = 200;
   const isLong = post.content.length > MAX_PREVIEW_LENGTH;
 
-  // ✅ Show either preview text or full content
   const displayContent =
     preview && !expanded
       ? post.content.slice(0, MAX_PREVIEW_LENGTH) + (isLong ? "..." : "")
@@ -34,7 +34,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
         By {post.author} | {new Date(post.date).toLocaleDateString()}
       </p>
 
-      {/* ✅ Render formatted HTML instead of plain text */}
+      {/* ✅ Render formatted HTML */}
       <div
         className="prose dark:prose-invert max-w-none mb-2"
         dangerouslySetInnerHTML={{ __html: displayContent }}
@@ -50,7 +50,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
         </button>
       )}
 
-      {/* Reaction Buttons */}
+      {/* Reactions */}
       <ReactionButtons
         postId={post._id}
         userId={userId}
@@ -58,7 +58,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
         initialReactedBy={post.reactedBy}
       />
 
-      {/* Toggle Reactions */}
+      {/* Toggle reactions */}
       <div className="mt-2">
         <button
           onClick={() => setShowReactions((prev) => !prev)}
@@ -77,7 +77,25 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
         )}
       </div>
 
-      {/* Shares */}
+      {/* Copy + Share */}
+      <div className="mt-3 flex flex-col gap-2">
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(
+              `${window.location.origin}/posts/${post._id}`
+            );
+            alert("Post URL copied!");
+          }}
+          className="text-blue-600 hover:underline self-start"
+        >
+          🔗 Copy Link
+        </button>
+
+        {/* ✅ Share buttons go here */}
+        <ShareButtons postId={post._id} title={post.title} />
+      </div>
+
+      {/* Shares count */}
       {post.shares !== undefined && (
         <p className="mt-2 text-sm text-gray-500">Shares: {post.shares}</p>
       )}
@@ -89,7 +107,9 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
             className="mt-2 text-blue-500"
             onClick={() => setShowComments((prev) => !prev)}
           >
-            {showComments ? "Hide Comments" : `Show Comments (${post.comments?.length || 0})`}
+            {showComments
+              ? "Hide Comments"
+              : `Show Comments (${post.comments?.length || 0})`}
           </button>
 
           {showComments && (
@@ -100,7 +120,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
         </>
       )}
 
-      {/* Latest comments in preview mode */}
+      {/* Latest comments (preview mode) */}
       {preview && post.comments && post.comments.length > 0 && (
         <div className="mt-4 text-sm text-gray-600">
           Latest comments:
@@ -116,3 +136,4 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
 };
 
 export default BlogPost;
+
