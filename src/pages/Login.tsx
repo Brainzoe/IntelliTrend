@@ -3,6 +3,7 @@ import React, { useState, Fragment } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Transition } from "@headlessui/react";
+import toast from "react-hot-toast"; // <-- import toast
 
 const Login: React.FC = () => {
   const { login } = useAuth();
@@ -17,8 +18,12 @@ const Login: React.FC = () => {
       navigate("/admin");
     } catch (err) {
       console.error("Login failed:", err);
-      alert("Login failed. Check your credentials.");
+      toast.error("Login failed. Check your credentials."); // <-- toast for error
     }
+  };
+
+  const handleForgotPasswordClick = () => {
+    toast("Redirecting to Forgot Password page...", { icon: "🔑" });
   };
 
   const fields = [
@@ -92,7 +97,11 @@ const Login: React.FC = () => {
 
           {/* Links for Forgot Password and Register */}
           <div className="mt-4 flex justify-between text-sm text-gray-600 dark:text-gray-300">
-            <Link to="/forgot-password" className="text-blue-600 hover:underline">
+            <Link
+              to="/forgot-password"
+              onClick={handleForgotPasswordClick} // <-- add toast
+              className="text-blue-600 hover:underline"
+            >
               Forgot Password?
             </Link>
             <span>

@@ -2,23 +2,28 @@
 import React, { useState, Fragment } from "react";
 import axios from "axios";
 import { Transition } from "@headlessui/react";
+import toast from "react-hot-toast";
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
   const [show, setShow] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setMessage("");
+
+    // Show a loading toast
+    const toastId = toast.loading("Sending password reset link... ⏳");
 
     try {
       await axios.post(`${process.env.REACT_APP_API_BASE}/auth/request-password-reset`, { email });
-      setMessage("If your email exists, a password reset link has been sent!");
+
+      // Update toast to success
+      toast.success("If your email exists, a password reset link has been sent! ✅", { id: toastId });
+
+      setEmail(""); // optional: clear input after submission
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to request password reset");
+      // Update toast to error
+      toast.error(err.response?.data?.message || "Failed to request password reset ❌", { id: toastId });
     }
   };
 
@@ -38,9 +43,6 @@ const ForgotPassword: React.FC = () => {
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
             Forgot Password
           </h2>
-
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-          {message && <p className="text-green-500 mb-4">{message}</p>}
 
           <input
             type="email"
