@@ -5,8 +5,6 @@ import ReactionButtons from "./ReactionButtons";
 import CommentSection from "./CommentSection";
 import { Link } from "react-router-dom";
 
-import DOMPurify from "dompurify";
-
 interface BlogPostProps {
   post: Post;
   userId: string;
@@ -18,12 +16,13 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
   const [showReactions, setShowReactions] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  // handle long text
   const MAX_PREVIEW_LENGTH = 200;
   const isLong = post.content.length > MAX_PREVIEW_LENGTH;
+
+  // ✅ Show either preview text or full content
   const displayContent =
-    preview || !expanded
-      ? post.content.slice(0, MAX_PREVIEW_LENGTH) + (isLong && !expanded ? "..." : "")
+    preview && !expanded
+      ? post.content.slice(0, MAX_PREVIEW_LENGTH) + (isLong ? "..." : "")
       : post.content;
 
   return (
@@ -35,27 +34,23 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
         By {post.author} | {new Date(post.date).toLocaleDateString()}
       </p>
 
-      {/* Content with "Read More" */}
-      import DOMPurify from "dompurify"; // install via npm i dompurify
+      {/* ✅ Render formatted HTML instead of plain text */}
+      <div
+        className="prose dark:prose-invert max-w-none mb-2"
+        dangerouslySetInnerHTML={{ __html: displayContent }}
+      />
 
-<p className="mb-2">
-  <span
-    dangerouslySetInnerHTML={{
-      __html: DOMPurify.sanitize(displayContent),
-    }}
-  />
-  {isLong && !expanded && (
-    <button
-      onClick={() => setExpanded(true)}
-      className="text-blue-500 ml-2"
-    >
-      Read More
-    </button>
-  )}
-</p>
+      {/* Read More button */}
+      {preview && isLong && !expanded && (
+        <button
+          onClick={() => setExpanded(true)}
+          className="text-blue-500 hover:underline"
+        >
+          Read More
+        </button>
+      )}
 
-
-      {/* Reaction Buttons (clickable) */}
+      {/* Reaction Buttons */}
       <ReactionButtons
         postId={post._id}
         userId={userId}
@@ -63,7 +58,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ post, userId, preview = false }) =>
         initialReactedBy={post.reactedBy}
       />
 
-      {/* Toggle for grouped reactions */}
+      {/* Toggle Reactions */}
       <div className="mt-2">
         <button
           onClick={() => setShowReactions((prev) => !prev)}
