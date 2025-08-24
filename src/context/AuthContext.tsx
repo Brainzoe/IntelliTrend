@@ -1,40 +1,25 @@
+// src/context/AuthContext.tsx
 import axios from "axios";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+
 const API_BASE = process.env.REACT_APP_API_BASE;
 
-export const login = async (emailOrUsername: string, password: string, adminSecret?: string) => {
-  const response = await fetch(`${API_BASE}/auth/admin-login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ emailOrUsername, password, adminSecret }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Login failed");
-  }
-  return await response.json();
-};
-
-
 interface User {
+  id?: string;
   username: string;
   email: string;
-  password?: string;
   token?: string;
-  role?: string;
+  role?: "user" | "admin";
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (emailOrUsername: string, password: string, adminSecret?: string) => Promise<void>;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>; // <-- add setUser
+  login: (emailOrUsername: string, password: string, adminSecret?: string) => Promise<User>;
   logout: () => void;
-  register: (userData: {
-    username: string;
-    email: string;
-    password: string;
-  }) => Promise<void>;
+  register: (userData: { username: string; email: string; password: string }) => Promise<void>;
   registerAdmin: (adminData: {
     username: string;
     email: string;
@@ -53,30 +38,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   });
 
   // 🚀 Login (supports optional adminSecret)
-  const login = async (emailOrUsername: string, password: string, adminSecret?: string) => {
+  const login = async (emailOrUsername: string, password: string, adminSecret?: string): Promise<User> => {
     try {
       const payload: any = { emailOrUsername, password };
       if (adminSecret) payload.adminSecret = adminSecret;
 
       const { data } = await axios.post(`${API_BASE}/auth/login`, payload);
 
-      const loggedUser = { ...data.user, token: data.token };
+      const loggedUser: User = { ...data.user, token: data.token };
 
+      // Save user locally
       setUser(loggedUser);
       localStorage.setItem("authUser", JSON.stringify(loggedUser));
       toast.success("Login successful 🎉");
-      navigate(loggedUser.role === "admin" ? "/admin" : "/dashboard");
+
+      return loggedUser; // <-- return for page redirect
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Login failed ❌");
+      throw err;
     }
   };
 
   // 🚀 Normal user registration
-  const register = async (userData: {
-    username: string;
-    email: string;
-    password: string;
-  }) => {
+  const register = async (userData: { username: string; email: string; password: string }) => {
     try {
       await axios.post(`${API_BASE}/auth/register`, userData);
       toast.success("Registration successful ✅");
@@ -86,7 +70,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // 🚀 Admin registration (backend enforces the secret)
+  // 🚀 Admin registration
   const registerAdmin = async (adminData: {
     username: string;
     email: string;
@@ -95,13 +79,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }) => {
     try {
       await axios.post(`${API_BASE}/auth/register`, {
-        username: adminData.username,
-        email: adminData.email,
-        password: adminData.password,
+        ...adminData,
         role: "admin",
-        adminSecret: adminData.adminSecret, // pass secret to backend
       });
-
       toast.success("Admin registered successfully ✅");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to register admin ❌");
@@ -117,7 +97,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, registerAdmin }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, register, registerAdmin }}>
       {children}
     </AuthContext.Provider>
   );

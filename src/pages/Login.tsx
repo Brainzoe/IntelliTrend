@@ -3,7 +3,7 @@ import React, { useState, Fragment } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Transition } from "@headlessui/react";
-import toast from "react-hot-toast"; // <-- import toast
+import toast from "react-hot-toast";
 
 const Login: React.FC = () => {
   const { login } = useAuth();
@@ -14,11 +14,16 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(form.emailOrUsername, form.password);
-      navigate("/admin");
+      const loggedUser = await login(form.emailOrUsername, form.password);
+
+      // Redirect based on role
+      if (loggedUser.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/"); // or "/dashboard"
+      }
     } catch (err) {
       console.error("Login failed:", err);
-      toast.error("Login failed. Check your credentials."); // <-- toast for error
     }
   };
 
@@ -95,11 +100,10 @@ const Login: React.FC = () => {
             </Transition>
           </form>
 
-          {/* Links for Forgot Password and Register */}
           <div className="mt-4 flex justify-between text-sm text-gray-600 dark:text-gray-300">
             <Link
               to="/forgot-password"
-              onClick={handleForgotPasswordClick} // <-- add toast
+              onClick={handleForgotPasswordClick}
               className="text-blue-600 hover:underline"
             >
               Forgot Password?
