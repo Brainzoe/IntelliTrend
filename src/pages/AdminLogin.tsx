@@ -34,7 +34,7 @@ const AdminLogin: React.FC = () => {
         setRequiresAdminSecret(false);
       } else {
         await login(form.emailOrUsername, form.password);
-        navigate("/admin/dashboard");
+        navigate("/admin");
       }
     } catch (err: any) {
       setError(err.message || "Something went wrong");
