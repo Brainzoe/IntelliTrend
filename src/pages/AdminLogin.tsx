@@ -1,93 +1,39 @@
+// src/pages/AdminLogin.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
-  const API_BASE = process.env.REACT_APP_API_BASE as string;
+  const { login, checkFirstAdmin, registerAdmin } = useAuth();
 
-  // form state
-  const [form, setForm] = useState({
-    emailOrUsername: "",
-    password: "",
-    adminSecret: "",
-  });
-
-  // extra states
+  const [form, setForm] = useState({ emailOrUsername: "", password: "", adminSecret: "" });
+  const [requiresAdminSecret, setRequiresAdminSecret] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [requiresAdminSecret, setRequiresAdminSecret] = useState(false);
 
-  type FormField = {
-    name: keyof typeof form;
-    label: string;
-    type: string;
-    placeholder: string;
-  };
-
-  const fields: FormField[] = [
-    { name: "emailOrUsername", label: "Email or Username", type: "text", placeholder: "Enter email or username" },
-    { name: "password", label: "Password", type: "password", placeholder: "Enter password" },
-  ];
-
-  if (requiresAdminSecret) {
-    fields.push({ name: "adminSecret", label: "Admin Secret", type: "password", placeholder: "Enter admin secret" });
-  }
-
-  // Check if first admin exists
   useEffect(() => {
-    const checkFirstAdmin = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/auth/check-first-admin`);
-        if (!res.ok) throw new Error("Failed to check first admin");
-        const data = await res.json();
-        setRequiresAdminSecret(!data.exists);
-      } catch (err) {
-        console.error("Failed to check first admin:", err);
-        setRequiresAdminSecret(false); // fallback: assume admin exists
-      }
-    };
-    checkFirstAdmin();
-  }, [API_BASE]);
+    checkFirstAdmin().then((exists) => setRequiresAdminSecret(!exists));
+  }, [checkFirstAdmin]);
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const url = requiresAdminSecret
-        ? `${API_BASE}/auth/register` // first admin registration
-        : `${API_BASE}/auth/login`;   // normal login
-
-      const body: any = requiresAdminSecret
-        ? {
-            username: form.emailOrUsername,
-            email: form.emailOrUsername,
-            password: form.password,
-            role: "admin",
-            adminSecret: form.adminSecret,
-          }
-        : {
-            emailOrUsername: form.emailOrUsername,
-            password: form.password,
-          };
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || "Request failed");
-
       if (requiresAdminSecret) {
-        alert("First admin registered successfully! Please login.");
+        await registerAdmin({
+          username: form.emailOrUsername,
+          email: form.emailOrUsername,
+          password: form.password,
+          adminSecret: form.adminSecret,
+        });
+        alert("First admin registered! Please login.");
         setForm({ emailOrUsername: "", password: "", adminSecret: "" });
-        setRequiresAdminSecret(false); // switch to login mode
+        setRequiresAdminSecret(false);
       } else {
-        localStorage.setItem("adminToken", data.token);
+        await login(form.emailOrUsername, form.password);
         navigate("/admin/dashboard");
       }
     } catch (err: any) {
@@ -99,37 +45,44 @@ const AdminLogin: React.FC = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded-lg p-8 w-full max-w-md"
-      >
+      <form className="bg-white shadow-md rounded-lg p-8 w-full max-w-md" onSubmit={handleSubmit}>
         <h2 className="text-2xl font-semibold mb-6 text-center">
           {requiresAdminSecret ? "Register First Admin" : "Admin Login"}
         </h2>
 
-        {fields.map((field) => (
-          <div key={field.name} className="mb-4">
-            <label htmlFor={field.name} className="block text-sm font-medium text-gray-700 mb-1">
-              {field.label}
-            </label>
-            <input
-              id={field.name}
-              type={field.type}
-              placeholder={field.placeholder}
-              value={form[field.name] as string}
-              onChange={(e) => setForm({ ...form, [field.name]: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-500"
-              required
-            />
-          </div>
-        ))}
+        <input
+          type="text"
+          placeholder="Email or Username"
+          value={form.emailOrUsername}
+          onChange={(e) => setForm({ ...form, emailOrUsername: e.target.value })}
+          required
+          className="w-full mb-4 px-3 py-2 border rounded"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          required
+          className="w-full mb-4 px-3 py-2 border rounded"
+        />
+        {requiresAdminSecret && (
+          <input
+            type="password"
+            placeholder="Admin Secret"
+            value={form.adminSecret}
+            onChange={(e) => setForm({ ...form, adminSecret: e.target.value })}
+            required
+            className="w-full mb-4 px-3 py-2 border rounded"
+          />
+        )}
 
-        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+        {error && <p className="text-red-500 mb-2">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
         >
           {loading ? "Processing..." : requiresAdminSecret ? "Register Admin" : "Login"}
         </button>

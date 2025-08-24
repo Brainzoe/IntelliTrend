@@ -16,16 +16,12 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>; // <-- add setUser
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   login: (emailOrUsername: string, password: string, adminSecret?: string) => Promise<User>;
   logout: () => void;
-  register: (userData: { username: string; email: string; password: string }) => Promise<void>;
-  registerAdmin: (adminData: {
-    username: string;
-    email: string;
-    password: string;
-    adminSecret: string;
-  }) => Promise<void>;
+  registerUser: (userData: { username: string; email: string; password: string }) => Promise<void>;
+  registerAdmin: (adminData: { username: string; email: string; password: string; adminSecret: string }) => Promise<void>;
+  checkFirstAdmin: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,58 +33,59 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
-  // 🚀 Login (supports optional adminSecret)
+  // Check if first admin exists
+  const checkFirstAdmin = async (): Promise<boolean> => {
+    try {
+      const res = await axios.get(`${API_BASE}/auth/check-first-admin`);
+      return res.data.exists;
+    } catch (err) {
+      console.error("Failed to check first admin", err);
+      return true; // assume admin exists
+    }
+  };
+
+  // Login (user or admin)
   const login = async (emailOrUsername: string, password: string, adminSecret?: string): Promise<User> => {
     try {
       const payload: any = { emailOrUsername, password };
       if (adminSecret) payload.adminSecret = adminSecret;
 
       const { data } = await axios.post(`${API_BASE}/auth/login`, payload);
-
       const loggedUser: User = { ...data.user, token: data.token };
 
-      // Save user locally
       setUser(loggedUser);
       localStorage.setItem("authUser", JSON.stringify(loggedUser));
       toast.success("Login successful 🎉");
 
-      return loggedUser; // <-- return for page redirect
+      return loggedUser;
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Login failed ❌");
       throw err;
     }
   };
 
-  // 🚀 Normal user registration
-  const register = async (userData: { username: string; email: string; password: string }) => {
+  // Normal user registration
+  const registerUser = async (userData: { username: string; email: string; password: string }) => {
     try {
-      await axios.post(`${API_BASE}/auth/register`, userData);
-      toast.success("Registration successful ✅");
-      navigate("/login");
+      await axios.post(`${API_BASE}/auth/register`, { ...userData, role: "user" });
+      toast.success("User registered successfully ✅");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Registration failed ❌");
+      toast.error(err.response?.data?.message || "Failed to register user ❌");
+      throw err;
     }
   };
 
-  // 🚀 Admin registration
-  const registerAdmin = async (adminData: {
-    username: string;
-    email: string;
-    password: string;
-    adminSecret: string;
-  }) => {
+  // Admin registration
+  const registerAdmin = async (adminData: { username: string; email: string; password: string; adminSecret: string }) => {
     try {
-      await axios.post(`${API_BASE}/auth/register`, {
-        ...adminData,
-        role: "admin",
-      });
+      await axios.post(`${API_BASE}/auth/register`, { ...adminData, role: "admin" });
       toast.success("Admin registered successfully ✅");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to register admin ❌");
+      throw err;
     }
   };
 
-  // 🚀 Logout
   const logout = () => {
     setUser(null);
     localStorage.removeItem("authUser");
@@ -97,7 +94,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, logout, register, registerAdmin }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, registerUser, registerAdmin, checkFirstAdmin }}>
       {children}
     </AuthContext.Provider>
   );

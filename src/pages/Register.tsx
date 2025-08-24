@@ -1,27 +1,38 @@
 // src/pages/Register.tsx
-// src/pages/Register.tsx
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
 const Register: React.FC = () => {
-  const { register } = useAuth();
+  const { registerUser } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: "", email: "", password: "" });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [form, setForm] = useState({ username: "", email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Call register with all required fields
-    register({
-      username: form.username,
-      email: form.email,
-      password: form.password, // ✅ include password
-    });
+    if (!form.username || !form.email || !form.password) {
+      toast.error("All fields are required!");
+      return;
+    }
 
-    toast.success("Registration successful!");
-    navigate("/login");
+    setLoading(true);
+    try {
+      await registerUser(form);
+      toast.success("Registration successful!");
+      navigate("/login");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -30,38 +41,47 @@ const Register: React.FC = () => {
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-xl shadow-md w-full max-w-sm"
       >
-        <h2 className="text-2xl font-bold mb-4">Register</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
+
         <input
           type="text"
+          name="username"
           placeholder="Username"
           value={form.username}
-          onChange={(e) => setForm({ ...form, username: e.target.value })}
+          onChange={handleChange}
           className="w-full p-2 border rounded mb-3"
           required
         />
         <input
           type="email"
+          name="email"
           placeholder="Email"
           value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          onChange={handleChange}
           className="w-full p-2 border rounded mb-3"
           required
         />
         <input
           type="password"
+          name="password"
           placeholder="Password"
           value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          onChange={handleChange}
           className="w-full p-2 border rounded mb-3"
           required
         />
+
         <button
           type="submit"
-          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+          disabled={loading}
+          className={`w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 ${
+            loading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          Register
+          {loading ? "Registering..." : "Register"}
         </button>
-        <p className="mt-3 text-sm">
+
+        <p className="mt-3 text-sm text-center">
           Already have an account?{" "}
           <Link to="/login" className="text-blue-600 hover:underline">
             Login
