@@ -12,6 +12,11 @@ import RecentUpdates from "./components/RecentUpdates";
 import { BlogProvider, useBlog } from "./context/BlogContext";
 import { Toaster } from "react-hot-toast";
 
+
+// Icons
+import { Home as HomeIcon, Laptop, Compass, Users, Star, TrendingUp } from "lucide-react";
+
+
 // Auth
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -41,12 +46,16 @@ const App: React.FC = () => {
   const userId = "guest-user";
 
   const categories = [
-    { label: "Technology", icon: "/assets/tech.svg" },
-    { label: "Adventure", icon: "/assets/adventure.svg" },
-    { label: "Social", icon: "/assets/social.svg" },
-    { label: "Celebrity", icon: "/assets/celebrity.svg" },
-    { label: "Trends", icon: "/assets/trends.svg" },
+    { label: "Home", path: "/", icon: <HomeIcon size={16} /> },
+    { label: "Technology", path: "/technology", icon: <Laptop size={16} /> },
+    { label: "Adventure", path: "/adventure", icon: <Compass size={16} /> },
+    { label: "Social", path: "/social", icon: <Users size={16} /> },
+    { label: "Celebrity", path: "/celebrity", icon: <Star size={16} /> },
+    { label: "Trends", path: "/trends", icon: <TrendingUp size={16} /> },
+    { label: "Login", path: "/login", icon: <Users size={16} /> },  // you can choose a better icon
+    { label: "Register", path: "/register", icon: <Star size={16} /> }, // optional better icon
   ];
+
 
   const recentUpdates = [
     { id: 1, title: "New Technology Trends 2024", date: "2024-10-22" },
@@ -61,11 +70,15 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <BlogProvider>
-        <Header
+        {/* <Header
           onSearch={handleSearch}
           categories={categories}
           onCategorySelect={handleCategorySelect}
-        />
+        /> */}
+
+        <Header onSearch={handleSearch} categories={categories} />
+
+
 
         <div className="flex flex-col md:flex-row p-4">
           <main className="flex-grow md:w-3/4">
