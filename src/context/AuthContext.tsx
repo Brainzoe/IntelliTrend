@@ -78,13 +78,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Admin registration
   const registerAdmin = async (adminData: { username: string; email: string; password: string; adminSecret: string }) => {
     try {
-      await axios.post(`${API_BASE}/auth/register`, { ...adminData, role: "admin" });
+      const token = user?.token;
+      await axios.post(`${API_BASE}/auth/register`, { ...adminData, role: "admin" }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       toast.success("Admin registered successfully ✅");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to register admin ❌");
       throw err;
     }
   };
+  
 
   const logout = () => {
     setUser(null);

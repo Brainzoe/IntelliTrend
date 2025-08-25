@@ -3,7 +3,6 @@ import React, { useState, Fragment, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import { Transition } from "@headlessui/react";
-import axios from "axios";
 
 type FormData = {
   username: string;
@@ -21,36 +20,37 @@ interface Field {
 }
 
 const AdminRegisterForm: React.FC = () => {
-  const { user, registerAdmin } = useAuth();
+  const { user, registerAdmin, checkFirstAdmin } = useAuth();
+
   const [formData, setFormData] = useState<FormData>({
     username: "",
     email: "",
     password: "",
     adminSecret: "",
   });
+
   const [loading, setLoading] = useState(false);
-  const [show] = useState(true);
   const [firstAdminExists, setFirstAdminExists] = useState<boolean | null>(null);
 
-  // On mount, ask backend if first admin already exists
+  // On mount, check if first admin exists
   useEffect(() => {
-    const checkFirstAdmin = async () => {
+    const fetchFirstAdmin = async () => {
       try {
-        const res = await axios.get("/api/auth/check-first-admin");
-        setFirstAdminExists(res.data.exists);
+        const exists = await checkFirstAdmin();
+        setFirstAdminExists(exists);
       } catch (err) {
         console.error("Failed to check first admin:", err);
         setFirstAdminExists(true); // assume exists if error
       }
     };
-    checkFirstAdmin();
-  }, []);
+    fetchFirstAdmin();
+  }, [checkFirstAdmin]);
 
   if (firstAdminExists === null) {
     return <div className="text-center p-4">Loading...</div>;
   }
 
-  const isFirstAdmin = !firstAdminExists; // backend says no admin yet
+  const isFirstAdmin = !firstAdminExists;
   const isAdmin = user?.role === "admin";
 
   if (!isFirstAdmin && !isAdmin) {
@@ -68,8 +68,15 @@ const AdminRegisterForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Basic validation
     if (!formData.username || !formData.email || !formData.password) {
       toast.error("Username, email, and password are required!");
+      return;
+    }
+
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address!");
       return;
     }
 
@@ -79,13 +86,14 @@ const AdminRegisterForm: React.FC = () => {
     }
 
     setLoading(true);
+
     try {
       await registerAdmin(formData);
       toast.success("Admin registered successfully!");
       setFormData({ username: "", email: "", password: "", adminSecret: "" });
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || "Failed to register admin");
+      toast.error(err.response?.data?.message || "Failed to register admin");
     } finally {
       setLoading(false);
     }
@@ -104,12 +112,12 @@ const AdminRegisterForm: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
       <Transition
         as={Fragment}
-        show={show}
+        show
         enter="transform transition duration-500 ease-out"
         enterFrom="opacity-0 translate-y-10"
         enterTo="opacity-100 translate-y-0"
       >
-        <div className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl">
+        <div className="max-w-md w-full mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl">
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
             {isFirstAdmin ? "Register First Admin" : "Register New Admin"}
           </h2>
@@ -119,7 +127,6 @@ const AdminRegisterForm: React.FC = () => {
                 as={Fragment}
                 key={field.name}
                 appear
-                show={show}
                 enter={`transition duration-500 ease-out delay-${index * 150}`}
                 enterFrom="opacity-0 translate-y-6"
                 enterTo="opacity-100 translate-y-0"
@@ -130,6 +137,7 @@ const AdminRegisterForm: React.FC = () => {
                   placeholder={field.placeholder}
                   value={formData[field.name]}
                   onChange={handleChange}
+                  disabled={loading}
                   className="
                     w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700
                     bg-white dark:bg-gray-700 text-gray-800 dark:text-white
@@ -137,6 +145,7 @@ const AdminRegisterForm: React.FC = () => {
                     focus:border-transparent
                     transition-all duration-300
                     hover:scale-[1.02] hover:shadow-md
+                    disabled:opacity-50 disabled:cursor-not-allowed
                   "
                 />
               </Transition>
@@ -145,7 +154,6 @@ const AdminRegisterForm: React.FC = () => {
             <Transition
               as={Fragment}
               appear
-              show={show}
               enter="transition duration-500 ease-out delay-500"
               enterFrom="opacity-0 translate-y-6"
               enterTo="opacity-100 translate-y-0"
