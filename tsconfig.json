@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -17,43 +13,21 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "plugins": [{ "name": "next" }],
+    "baseUrl": "src",
     "paths": {
-      "@components/*": [
-        "./src/components/*"
-      ],
-      "@pages/*": [
-        "./src/pages/*"
-      ],
-      "@styles/*": [
-        "./src/styles/*"
-      ],
-      "@hooks/*": [
-        "./src/hooks/*"
-      ],
-      "@utils/*": [
-        "./src/utils/*"
-      ],
-      "@assets/*": [
-        "./src/assets/*"
-      ],
-      "@services/*": [
-        "./src/services/*"
-      ],
-      "@context/*": [
-        "./src/context/*"
-      ],
-      "@config/*": [
-        "./src/config/*"
-      ],
-      "@types/*": [
-        "./src/types/*"
-      ]
-    },
+  "@components/*": ["components/*"],
+  "@lib/*": ["lib/*"],
+  "@pages/*": ["pages/*"],
+  "@styles/*": ["styles/*"],
+  "@hooks/*": ["hooks/*"],
+  "@utils/*": ["utils/*"],
+  "@assets/*": ["assets/*"],
+  "@services/*": ["services/*"],
+  "@context/*": ["context/*"],
+  "@config/*": ["config/*"],
+  "@types/*": ["types/*"]
+},
     "forceConsistentCasingInFileNames": true
   },
   "include": [
@@ -61,9 +35,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/images.d.ts" 
-, "src/components/ErrorBoundary.tsx"  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "images.d.ts",
+    "components/ErrorBoundary.tsx"
+  ],
+  "exclude": ["node_modules"]
 }

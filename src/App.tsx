@@ -11,10 +11,16 @@ import Post from "./components/Post";
 import RecentUpdates from "./components/RecentUpdates";
 import { BlogProvider, useBlog } from "./context/BlogContext";
 import { Toaster } from "react-hot-toast";
-import Sidebar2 from "./components/Sidebar2";
 
 // Icons
-import { Home as HomeIcon, Laptop, Compass, Users, Star, TrendingUp } from "lucide-react";
+import {
+  Home as HomeIcon,
+  Laptop,
+  Compass,
+  Users,
+  Star,
+  TrendingUp,
+} from "lucide-react";
 
 // Auth
 import { AuthProvider } from "./context/AuthContext";
@@ -42,7 +48,6 @@ import AdminRegisterPage from "./pages/AdminRegisterPage";
 const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [isSidebar2Open, setSidebar2Open] = useState(false); // sidebar state
   const userId = "guest-user";
 
   const categories = [
@@ -52,8 +57,6 @@ const App: React.FC = () => {
     { label: "Social", path: "/social", icon: <Users size={16} /> },
     { label: "Celebrity", path: "/celebrity", icon: <Star size={16} /> },
     { label: "Trends", path: "/trends", icon: <TrendingUp size={16} /> },
-    { label: "Login", path: "/login", icon: <Users size={16} /> },
-    { label: "Register", path: "/register", icon: <Star size={16} /> },
   ];
 
   const recentUpdates = [
@@ -64,26 +67,18 @@ const App: React.FC = () => {
   ];
 
   const handleSearch = (query: string) => setSearchQuery(query.toLowerCase());
-  const handleCategorySelect = (category: string) => setSelectedCategory(category);
+  const handleCategorySelect = (category: string) =>
+    setSelectedCategory(category);
 
   return (
     <AuthProvider>
       <BlogProvider>
+        {/* ✅ Only one Header (with built-in mobile hamburger menu) */}
         <Header onSearch={handleSearch} categories={categories} />
 
-        <div className="flex flex-col md:flex-row p-4">
-          {/* Sidebar */}
-          <aside className="w-full md:w-1/4 lg:w-1/5 mb-4 md:mb-0">
-            <Sidebar2
-              categories={categories}
-              onCategorySelect={handleCategorySelect}
-              isOpen={isSidebar2Open}
-              onClose={() => setSidebar2Open(false)}
-            />
-          </aside>
-
+        <div className="flex flex-col md:flex-row p-4 relative">
           {/* Main Content */}
-          <main className="flex-grow md:w-1/2 lg:w-3/5 md:mx-4">
+          <main className="flex-grow md:w-3/4 lg:w-3/5 md:mx-4 z-0">
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<HomeWrapper userId={userId} />} />
@@ -94,7 +89,10 @@ const App: React.FC = () => {
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/blog" element={<BlogListWrapper userId={userId} />} />
-              <Route path="/blog/:postId" element={<PostWrapper userId={userId} />} />
+              <Route
+                path="/blog/:postId"
+                element={<PostWrapper userId={userId} />}
+              />
               <Route path="/technology" element={<Technology />} />
               <Route path="/adventure" element={<Adventure />} />
               <Route path="/social" element={<Social />} />
@@ -126,7 +124,7 @@ const App: React.FC = () => {
           </main>
 
           {/* Recent Updates */}
-          <aside className="w-full md:w-1/4 lg:w-1/5 p-4 mt-4 md:mt-0">
+          <aside className="w-full md:w-1/4 lg:w-1/5 p-4 mt-4 md:mt-0 hidden md:block">
             <RecentUpdates updates={recentUpdates} />
           </aside>
         </div>

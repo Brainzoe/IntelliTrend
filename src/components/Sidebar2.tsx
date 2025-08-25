@@ -16,11 +16,11 @@ interface Sidebar2Props {
   onClose: () => void;
 }
 
-// define User type
+// User type
 export interface User {
   name: string;
   email: string;
-  avatar?: string; // optional avatar
+  avatar?: string;
 }
 
 const Sidebar2: React.FC<Sidebar2Props> = ({
@@ -29,19 +29,25 @@ const Sidebar2: React.FC<Sidebar2Props> = ({
   isOpen,
   onClose,
 }) => {
-  const { user } = useAuth() as { user: User | null }; // ensure TypeScript knows the type
+  const { user } = useAuth() as { user: User | null };
 
   return (
     <aside
-      className={`bg-gray-100 p-4 w-64 space-y-4 absolute md:relative md:block top-0 left-0 h-full transition-transform ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-      }`}
+      className={`
+        bg-gray-100 p-4 space-y-4
+        absolute md:relative top-0 left-0 h-full
+        transition-transform transform
+        ${isOpen ? "translate-x-0" : "-translate-x-56 md:translate-x-0"}
+        w-56 md:w-64
+        z-50
+      `}
+      style={{ minWidth: "200px" }}
     >
       {/* User profile */}
       {user && (
         <div className="flex flex-col items-center p-4 bg-gray-200 rounded-lg">
           <img
-            src={user.avatar || "https://i.pravatar.cc/150?img=3"} // default avatar
+            src={user.avatar || "https://i.pravatar.cc/150?img=3"}
             alt="Profile"
             className="w-16 h-16 rounded-full mb-2"
           />
@@ -65,7 +71,7 @@ const Sidebar2: React.FC<Sidebar2Props> = ({
         ))}
       </nav>
 
-      {/* Close button for mobile */}
+      {/* Close button on mobile */}
       <button
         className="mt-4 md:hidden text-red-500 hover:text-red-700"
         onClick={onClose}

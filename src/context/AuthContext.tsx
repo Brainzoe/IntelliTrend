@@ -12,7 +12,10 @@ interface User {
   email: string;
   token?: string;
   role?: "user" | "admin";
+  avatar?: string; // optional avatar
+  displayName?: string; // optional display name, fallback to username
 }
+
 
 interface AuthContextType {
   user: User | null;
