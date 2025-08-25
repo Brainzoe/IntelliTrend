@@ -4,7 +4,6 @@ import { Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-// Extend the User type to optionally include avatar and displayName
 interface User {
   id?: string;
   username: string;
@@ -27,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categories }) => {
 
   const handleLogout = () => {
     logout();
-    navigate("/"); // redirect to home after logout
+    navigate("/");
   };
 
   return (
@@ -85,6 +84,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categories }) => {
 
           {user && (
             <div className="flex items-center gap-2">
+              {/* Dashboard Link */}
               <Link
                 to="/dashboard"
                 className="flex items-center gap-1 hover:text-blue-400"
@@ -96,6 +96,17 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categories }) => {
                 />
                 <span>{user.displayName || user.username}</span>
               </Link>
+
+              {/* Admin Dashboard Link */}
+              {user.role === "admin" && (
+                <Link
+                  to="/admin-dashboard"
+                  className="ml-4 hover:text-blue-400 font-semibold"
+                >
+                  Admin Dashboard
+                </Link>
+              )}
+
               <button
                 onClick={handleLogout}
                 className="hover:text-blue-400 px-2 py-1 rounded hover:bg-gray-700 transition"
@@ -169,6 +180,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categories }) => {
 
               {user && (
                 <div className="flex flex-col gap-2">
+                  {/* Dashboard Link */}
                   <Link
                     to="/dashboard"
                     className="flex items-center gap-2 hover:text-blue-600"
@@ -181,6 +193,18 @@ const Header: React.FC<HeaderProps> = ({ onSearch, categories }) => {
                     />
                     <span>{user.displayName || user.username}</span>
                   </Link>
+
+                  {/* Admin Dashboard Link */}
+                  {user.role === "admin" && (
+                    <Link
+                      to="/admin"
+                      className="ml-2 hover:text-blue-600 font-semibold"
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+
                   <button
                     onClick={() => {
                       handleLogout();
